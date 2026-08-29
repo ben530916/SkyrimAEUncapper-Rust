@@ -79,8 +79,21 @@ pub mod version {
         SkseVersion::new(1, 6, 659, RUNTIME_TYPE_GOG);
     pub const RUNTIME_VERSION_1_6_678_EPIC: SkseVersion =
         SkseVersion::new(1, 6, 678, RUNTIME_TYPE_EPIC);
+    pub const RUNTIME_VERSION_1_6_1130: SkseVersion =
+        SkseVersion::new(1, 6, 1130, RUNTIME_TYPE_BETHESDA);
+    pub const RUNTIME_VERSION_1_6_1170: SkseVersion =
+        SkseVersion::new(1, 6, 1170, RUNTIME_TYPE_BETHESDA);
+    // Bethesda's August 2026 update. Address Library switched to file format 5 as of
+    // this release (see versiondb.rs), and the AE PlayerCharacter struct gained 8 new
+    // bytes ahead of GameStateData (see AE1799_SHIFT in alandtse/CommonLibSSE-NG's
+    // include/RE/P/PlayerCharacter.h), which shifts the perk pool byte accessed in
+    // skyrim.rs::get_perk_pool().
+    pub const RUNTIME_VERSION_1_7_99: SkseVersion =
+        SkseVersion::new(1, 7, 99, RUNTIME_TYPE_BETHESDA);
+    pub const RUNTIME_VERSION_1_7_104: SkseVersion =
+        SkseVersion::new(1, 7, 104, RUNTIME_TYPE_BETHESDA);
 
-    pub const CURRENT_RELEASE_RUNTIME: SkseVersion = RUNTIME_VERSION_1_6_640;
+    pub const CURRENT_RELEASE_RUNTIME: SkseVersion = RUNTIME_VERSION_1_7_104;
     pub const PACKED_SKSE_VERSION: SkseVersion = SkseVersion::new(2, 2, 3, RUNTIME_TYPE_BETHESDA);
 
     impl SkseVersion {

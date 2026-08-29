@@ -27,7 +27,7 @@ use core::cell::Cell;
 use core::ffi::c_int;
 
 use libskyrim::patcher::{GameRef, Descriptor, DescriptorObject, GameLocation};
-use libskyrim::version::{RUNTIME_VERSION_1_6_629, RUNTIME_VERSION_1_5_97};
+use libskyrim::version::{RUNTIME_VERSION_1_6_629, RUNTIME_VERSION_1_5_97, RUNTIME_VERSION_1_7_99};
 
 use crate::settings::SkillMult;
 use crate::settings::SETTINGS;
@@ -104,7 +104,28 @@ impl PlayerCharacter {
         // SAFETY: These offsets have been verified to be correct. Cell is transparent, so we
         //         can use it here as a safe wrapper around a variable that we don't have
         //         exclusive access to.
-        unsafe { Cell::from_mut(Self::version_offset::<u8>(0xb09, 0xb01).as_mut().unwrap()) }
+        //
+        // Bethesda's 1.7.99 update (Aug 2026) inserted 8 new bytes into the AE-era
+        // PlayerCharacter struct ahead of the block this field lives in, shifting it (and
+        // everything declared after it) by +8. Confirmed against the AE1799_SHIFT offset
+        // correction in alandtse/CommonLibSSE-NG's include/RE/P/PlayerCharacter.h, which
+        // applies the same +8 to GameStateData (which holds the analogous perkCount byte)
+        // for any runtime >= 1.7.99. version_offset() only has two tiers, so this field
+        // needs its own three-way branch rather than reusing that helper.
+        let version = libskyrim::version::current_runtime();
+        let offset: usize = if version < RUNTIME_VERSION_1_6_629 {
+            0xb01
+        } else if version < RUNTIME_VERSION_1_7_99 {
+            0xb09
+        } else {
+            0xb09 + 8 // = 0xb11
+        };
+
+        // SAFETY: PLAYER_OBJECT is guaranteed valid by GameRef, same as version_offset().
+        unsafe {
+            let player = *(PLAYER_OBJECT.get());
+            Cell::from_mut(player.cast::<u8>().add(offset).cast::<u8>().as_mut().unwrap())
+        }
     }
 
     /// Gets the actor value owner for the player actor.
